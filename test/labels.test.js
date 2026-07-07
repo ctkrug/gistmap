@@ -47,4 +47,21 @@ describe('labelClusters', () => {
     const labels = labelClusters(['hello world'], [0], 2)
     expect(labels[1]).toBe('misc')
   })
+
+  it('ignores documents whose assignment is out of range', () => {
+    // A negative, null, or >= k assignment must be skipped, not crash or leak
+    // its terms into a cluster.
+    const texts = ['alpha beta', 'gamma delta', 'orphaned words', 'nullish words']
+    const assignments = [0, 0, -1, 5] // last two are out of range for k=1
+    const labels = labelClusters(texts, assignments, 1)
+    expect(labels).toHaveLength(1)
+    expect(labels[0]).toMatch(/alpha|beta|gamma|delta/)
+    expect(labels[0]).not.toMatch(/orphaned|nullish/)
+  })
+
+  it('labels a single-cluster corpus from its own terms', () => {
+    // Exercises the idf denominator when every doc shares the term.
+    const labels = labelClusters(['mango mango', 'mango sweet'], [0, 0], 1)
+    expect(labels[0]).toMatch(/mango/)
+  })
 })
