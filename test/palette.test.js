@@ -13,4 +13,9 @@ describe('palette', () => {
     expect(clusterColor(12)).toBe(CLUSTER_COLORS[0])
     expect(clusterColor(13)).toBe(CLUSTER_COLORS[1])
   })
+
+  it('wraps negative ids back into range instead of returning undefined', () => {
+    expect(clusterColor(-1)).toBe(CLUSTER_COLORS[11])
+    expect(clusterColor(-12)).toBe(CLUSTER_COLORS[0])
+  })
 })
