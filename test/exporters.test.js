@@ -90,6 +90,19 @@ describe('toCSV', () => {
     // minus sign, must stay a bare number so the CSV parses as data.
     expect(rows[1].endsWith(',-0.2,0.5')).toBe(true)
   })
+  it('defuses a lone dangerous char but leaves numeric-looking text alone', () => {
+    const m = {
+      k: 1,
+      clusters: [{ id: 0, label: 'x' }],
+      points: [
+        { text: '-', x: 0, y: 0, cluster: 0 }, // not a number → guarded
+        { text: '1e5', x: 0, y: 0, cluster: 0 }, // scientific number → bare
+      ],
+    }
+    const rows = toCSV(m).split('\r\n')
+    expect(rows[1].startsWith("'-")).toBe(true)
+    expect(rows[2].startsWith('1e5')).toBe(true)
+  })
   it('handles an empty map with just a header', () => {
     expect(toCSV({ points: [], clusters: [] })).toBe('line,cluster,label,x,y')
   })
