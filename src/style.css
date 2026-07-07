@@ -1,6 +1,7 @@
 /* Gistmap — celestial-cartography theme. Tokens mirror docs/DESIGN.md. */
 
 :root {
+  color-scheme: dark;
   --bg: #0a0f1f;
   --surface-1: #111a30;
   --surface-2: #1a2646;
