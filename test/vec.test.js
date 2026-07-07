@@ -27,4 +27,16 @@ describe('vec', () => {
     const u = normalize([3, 4])
     expect(norm(u)).toBeCloseTo(1)
   })
+
+  it('normalize returns a zero vector unchanged (no divide-by-zero)', () => {
+    expect(normalize([0, 0, 0])).toEqual([0, 0, 0])
+  })
+
+  it('centroid of an empty list is an empty vector', () => {
+    expect(centroid([])).toEqual([])
+  })
+
+  it('cosine is 0 when only the second vector is zero-length', () => {
+    expect(cosine([1, 2], [0, 0])).toBe(0)
+  })
 })
