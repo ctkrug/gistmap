@@ -151,11 +151,52 @@ describe('createSfx resume', () => {
 
 describe('createSfx defaults', () => {
   it('constructs with no deps, falling back to platform storage/clock', () => {
-    // Exercises safeLocalStorage()/performanceNow() — in the node test env
-    // localStorage is absent (→ null) and performance exists.
+    // In the node test env localStorage is absent, so safeLocalStorage()
+    // falls back to null and isMuted() reads as false.
     const sfx = createSfx()
     expect(sfx.isMuted()).toBe(false)
     expect(() => sfx.setMuted(true)).not.toThrow()
+  })
+
+  it('exercises the default performanceNow clock via an unmuted tick', () => {
+    // tick() calls now() -> performanceNow() as its first statement, before
+    // anything else could short-circuit it (e.g. a prior setMuted(true)).
+    const sfx = createSfx()
     expect(() => sfx.play('tick')).not.toThrow()
+  })
+
+  it('falls back to null storage when localStorage access throws', () => {
+    // Mirrors Safari private-mode / storage-blocked embeds, where merely
+    // referencing localStorage throws a SecurityError.
+    const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      get() {
+        throw new Error('storage disabled')
+      },
+    })
+    try {
+      expect(() => createSfx()).not.toThrow()
+    } finally {
+      if (original) Object.defineProperty(globalThis, 'localStorage', original)
+      else delete globalThis.localStorage
+    }
+  })
+
+  it('falls back to 0 when performance access throws', () => {
+    const original = Object.getOwnPropertyDescriptor(globalThis, 'performance')
+    Object.defineProperty(globalThis, 'performance', {
+      configurable: true,
+      get() {
+        throw new Error('performance disabled')
+      },
+    })
+    try {
+      const sfx = createSfx()
+      expect(() => sfx.play('tick')).not.toThrow()
+    } finally {
+      if (original) Object.defineProperty(globalThis, 'performance', original)
+      else delete globalThis.performance
+    }
   })
 })
