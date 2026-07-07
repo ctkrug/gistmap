@@ -5,6 +5,7 @@ import { clusterColor } from './lib/palette.js'
 import { createMapView } from './render/mapview.js'
 import { createSfx } from './lib/sfx.js'
 import { toJSON, toCSV } from './lib/exporters.js'
+import { parseLines, MAX_LINES } from './lib/input.js'
 
 // App shell: paste → embed → map, then explore (hover, legend, k-slider,
 // reproject, export). The pure math lives under lib/; the map render under
@@ -119,11 +120,11 @@ for (const name of SAMPLE_NAMES) {
 }
 
 // --- Input handling -------------------------------------------------------
+function parsed() {
+  return parseLines(input.value)
+}
 function lines() {
-  return input.value
-    .split('\n')
-    .map((s) => s.trim())
-    .filter(Boolean)
+  return parsed().lines
 }
 
 function updateCount() {
@@ -155,13 +156,23 @@ el('clear-btn').addEventListener('click', () => {
 })
 
 // --- The wow moment: map it -----------------------------------------------
+let busy = false
 async function mapIt() {
-  const texts = lines()
+  // Guard against overlapping runs: the button disables itself, but Ctrl+Enter
+  // and the retry button call this directly, so a key-masher could otherwise
+  // launch several embed pipelines at once.
+  if (busy) return
+  const { lines: texts, truncated } = parsed()
   if (texts.length < MIN_LINES) {
     showHint(`Add at least ${MIN_LINES} lines to map — you have ${texts.length}.`)
     return
   }
-  clearHint()
+  if (truncated > 0) {
+    showHint(`Mapping the first ${MAX_LINES} lines — ${truncated} more were left out to keep it fast.`)
+  } else {
+    clearHint()
+  }
+  busy = true
   mapBtn.disabled = true
   showLoading('Loading the on-device model…')
   setStatus('loading model…')
@@ -181,6 +192,7 @@ async function mapIt() {
     showError()
     setStatus('model failed to load', true)
   } finally {
+    busy = false
     mapBtn.disabled = false
   }
 }
