@@ -405,6 +405,9 @@ input[type='range']:focus-visible {
   background: var(--surface-2);
   outline: none;
 }
+.legend-row:focus-visible {
+  box-shadow: 0 0 0 3px rgba(94, 198, 216, 0.4);
+}
 .legend-row.active {
   background: var(--surface-2);
   box-shadow: inset 0 0 0 1px var(--accent);
