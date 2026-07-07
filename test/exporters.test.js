@@ -30,6 +30,13 @@ describe('toRows', () => {
   it('is empty for an empty map', () => {
     expect(toRows({ points: [], clusters: [] })).toEqual([])
   })
+  it('falls back to a blank label when a point has no matching cluster', () => {
+    const rows = toRows({ points: [{ text: 'x', x: 0, y: 0, cluster: 9 }], clusters: [] })
+    expect(rows[0].label).toBe('')
+  })
+  it('tolerates a map missing points/clusters entirely', () => {
+    expect(toRows({})).toEqual([])
+  })
 })
 
 describe('toJSON', () => {
@@ -38,6 +45,11 @@ describe('toJSON', () => {
     expect(parsed.k).toBe(2)
     expect(parsed.clusters).toHaveLength(2)
     expect(parsed.points[0].line).toBe('Book flights')
+  })
+  it('defaults k to 0 and clusters to [] when absent', () => {
+    const parsed = JSON.parse(toJSON({ points: [] }))
+    expect(parsed.k).toBe(0)
+    expect(parsed.clusters).toEqual([])
   })
 })
 
