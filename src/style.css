@@ -254,6 +254,13 @@ textarea:focus-visible {
   background: rgba(26, 38, 70, 0.35);
 }
 
+/* An explicit `display` on a [hidden] element otherwise beats the browser's
+   default `[hidden] { display: none }` UA rule, leaving an empty bordered
+   box on screen even while the `hidden` attribute is set. */
+.tools[hidden] {
+  display: none;
+}
+
 .tool-block .field {
   display: flex;
   justify-content: space-between;
@@ -357,6 +364,10 @@ input[type='range']:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.legend[hidden] {
+  display: none;
 }
 
 .legend-head {
