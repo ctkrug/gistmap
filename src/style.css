@@ -167,6 +167,11 @@ textarea:focus-visible {
   transform: translateY(1px) scale(0.99);
 }
 
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(94, 198, 216, 0.4);
+}
+
 .btn:disabled {
   filter: grayscale(0.4) brightness(0.8);
   cursor: not-allowed;
@@ -210,6 +215,12 @@ textarea:focus-visible {
 .pill:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.pill:focus-visible {
+  outline: none;
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 3px rgba(94, 198, 216, 0.25);
 }
 
 .hint {
