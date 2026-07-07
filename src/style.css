@@ -1,0 +1,262 @@
+/* Gistmap — celestial-cartography theme. Tokens mirror docs/DESIGN.md. */
+
+:root {
+  --bg: #0a0f1f;
+  --surface-1: #111a30;
+  --surface-2: #1a2646;
+  --line: #2a3860;
+  --text: #f0ead9;
+  --muted: #94a0c0;
+  --accent: #e7b24c;
+  --accent-2: #5ec6d8;
+  --success: #79d79a;
+  --danger: #e8746b;
+
+  --radius: 10px;
+  --radius-sm: 8px;
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Space Mono', ui-monospace, 'SF Mono', monospace;
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 30px rgba(0, 0, 0, 0.45);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-ui);
+  color: var(--text);
+  background:
+    radial-gradient(1200px 800px at 75% -10%, rgba(94, 198, 216, 0.08), transparent 60%),
+    radial-gradient(900px 700px at 10% 110%, rgba(231, 178, 76, 0.07), transparent 55%),
+    var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  min-height: 100%;
+}
+
+/* --- Layout ------------------------------------------------------------ */
+
+.shell {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+  height: 100vh;
+  padding: 16px;
+}
+
+.rail {
+  background: linear-gradient(180deg, var(--surface-1), rgba(17, 26, 48, 0.6));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.stage {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: radial-gradient(1400px 900px at 50% 40%, rgba(26, 38, 70, 0.5), rgba(10, 15, 31, 0.9));
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+#map {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* --- Wordmark ---------------------------------------------------------- */
+
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 31px;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+}
+
+.wordmark .star {
+  color: var(--accent);
+  animation: twinkle 3.2s var(--ease) infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.82); }
+}
+
+.tagline {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 6px 0 0;
+}
+
+/* --- Controls ---------------------------------------------------------- */
+
+label.field {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+textarea {
+  width: 100%;
+  min-height: 180px;
+  resize: vertical;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  transition: border-color 180ms var(--ease), box-shadow 180ms var(--ease);
+}
+
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 3px rgba(94, 198, 216, 0.18);
+}
+
+.btn {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 15px;
+  color: #0a0f1f;
+  background: linear-gradient(180deg, #f2c766, var(--accent));
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 12px 18px;
+  cursor: pointer;
+  min-height: 44px;
+  box-shadow: 0 6px 18px rgba(231, 178, 76, 0.25);
+  transition: transform 140ms var(--ease), box-shadow 180ms var(--ease), filter 180ms var(--ease);
+}
+
+.btn:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 8px 22px rgba(231, 178, 76, 0.35);
+}
+
+.btn:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.btn:disabled {
+  filter: grayscale(0.4) brightness(0.8);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+
+.btn.ghost:hover {
+  border-color: var(--accent-2);
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.samples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: border-color 160ms var(--ease), color 160ms var(--ease);
+}
+
+.pill:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+/* --- Empty / status state on the stage --------------------------------- */
+
+.stage-status {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  gap: 10px;
+  padding: 24px;
+  color: var(--muted);
+}
+
+.stage-status h2 {
+  font-family: var(--font-display);
+  color: var(--text);
+  font-weight: 500;
+  margin: 0;
+}
+
+/* --- Responsive -------------------------------------------------------- */
+
+@media (max-width: 780px) {
+  .shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: 60vh auto;
+    height: auto;
+    min-height: 100vh;
+  }
+  .rail {
+    order: 2;
+  }
+  .stage {
+    order: 1;
+    min-height: 60vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wordmark .star {
+    animation: none;
+  }
+}
