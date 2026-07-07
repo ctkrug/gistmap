@@ -98,21 +98,30 @@ export function createMapView(canvas, opts = {}) {
     loop()
   }
 
+  // Runs forever once started (stopped only by destroy()): drives the snap/
+  // fade-in tween while one is in flight, then keeps rescheduling itself so
+  // the background starfield (drawStars, driven by `now`) keeps twinkling
+  // at rest instead of freezing on the last animated frame.
   function loop() {
     raf = requestAnimationFrame((now) => {
       const elapsed = now - animStart
       const settled = elapsed >= SNAP_MS
-      for (let i = 0; i < targets.length; i++) {
-        const t = settled ? 1 : staggeredProgress(elapsed, SNAP_MS, i, targets.length)
-        displayed[i] = {
-          x: lerp(starts[i].x, targets[i].x, t),
-          y: lerp(starts[i].y, targets[i].y, t),
+      if (!settled) {
+        for (let i = 0; i < targets.length; i++) {
+          const t = staggeredProgress(elapsed, SNAP_MS, i, targets.length)
+          displayed[i] = {
+            x: lerp(starts[i].x, targets[i].x, t),
+            y: lerp(starts[i].y, targets[i].y, t),
+          }
         }
+        // Fade the constellation lines in after the points begin settling.
+        linesAlpha = easeOutCubic((elapsed - SNAP_MS * 0.5) / (SNAP_MS * 0.8))
+      } else if (linesAlpha < 1) {
+        displayed = targets.map((p) => ({ ...p }))
+        linesAlpha = 1
       }
-      // Fade the constellation lines in after the points begin settling.
-      linesAlpha = easeOutCubic((elapsed - SNAP_MS * 0.5) / (SNAP_MS * 0.8))
       draw(now)
-      if (!settled || linesAlpha < 1) loop()
+      loop()
     })
   }
 
@@ -264,7 +273,12 @@ export function createMapView(canvas, opts = {}) {
   canvas.addEventListener('pointerdown', onPointerMove) // tap-to-hover on touch
 
   fit()
-  draw(performance.now())
+  if (reduceMotion) {
+    draw(performance.now())
+  } else {
+    animStart = performance.now()
+    loop()
+  }
 
   function destroy() {
     cancelAnimationFrame(raf)
