@@ -242,7 +242,7 @@ function revealMap(map, opts) {
   view.setMap(map, opts)
   legend.hidden = false
   renderLegend(map)
-  setStatus(`${map.points.length} lines · ${map.k} constellations`)
+  setStatus(`${map.points.length} lines · ${map.clusters.length} constellations`)
   coord.textContent = `k=${map.k} · n=${map.points.length}`
 }
 
@@ -267,7 +267,7 @@ kSlider.addEventListener('input', () => {
   activeCluster = -1
   view.setMap(map, { mode: 'tween' })
   renderLegend(map)
-  setStatus(`${map.points.length} lines · ${map.k} constellations`)
+  setStatus(`${map.points.length} lines · ${map.clusters.length} constellations`)
   coord.textContent = `k=${map.k} · n=${map.points.length}`
   sfx.play('tick')
 })
