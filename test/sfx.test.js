@@ -148,3 +148,14 @@ describe('createSfx resume', () => {
     expect(() => sfx.resume()).not.toThrow()
   })
 })
+
+describe('createSfx defaults', () => {
+  it('constructs with no deps, falling back to platform storage/clock', () => {
+    // Exercises safeLocalStorage()/performanceNow() — in the node test env
+    // localStorage is absent (→ null) and performance exists.
+    const sfx = createSfx()
+    expect(sfx.isMuted()).toBe(false)
+    expect(() => sfx.setMuted(true)).not.toThrow()
+    expect(() => sfx.play('tick')).not.toThrow()
+  })
+})
