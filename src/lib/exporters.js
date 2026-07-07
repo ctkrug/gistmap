@@ -41,12 +41,23 @@ export function toCSV(map) {
 }
 
 function csvCell(value) {
-  const s = String(value)
+  let s = String(value)
+  // Defuse spreadsheet formula injection: a cell beginning with = + - @ (or a
+  // tab/CR) is executed as a formula by Excel/Sheets. Prefix an apostrophe so
+  // it renders as text — but never mangle a plain number (coordinates are
+  // legitimately negative), so a bare "-0.2" stays parseable.
+  if (/^[=+\-@\t\r]/.test(s) && !isPlainNumber(s)) {
+    s = `'${s}`
+  }
   // Quote when the cell contains a delimiter, quote, or newline; double inner quotes.
   if (/[",\r\n]/.test(s)) {
     return `"${s.replace(/"/g, '""')}"`
   }
   return s
+}
+
+function isPlainNumber(s) {
+  return s.trim() !== '' && Number.isFinite(Number(s))
 }
 
 function round4(n) {

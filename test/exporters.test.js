@@ -58,6 +58,26 @@ describe('toCSV', () => {
     // so splitting on \r\n (not \n) keeps the count correct.
     expect(lines).toHaveLength(4)
   })
+  it('neutralizes spreadsheet formula injection in text cells', () => {
+    // A pasted line that begins with =, +, -, @ (or a control char) is a
+    // formula-injection payload when the CSV is opened in Excel/Sheets.
+    const evil = {
+      k: 1,
+      clusters: [{ id: 0, label: '@evil' }],
+      points: [
+        { text: '=SUM(A1:A9)', x: -0.2, y: 0.5, cluster: 0 },
+        { text: '+1+1', x: 0.1, y: 0.1, cluster: 0 },
+      ],
+    }
+    const rows = toCSV(evil).split('\r\n')
+    // Dangerous leading char is defused with a leading apostrophe...
+    expect(rows[1].startsWith("'=SUM(A1:A9)")).toBe(true)
+    expect(rows[1]).toContain("'@evil")
+    expect(rows[2].startsWith("'+1+1")).toBe(true)
+    // ...but the numeric coordinate column, which legitimately starts with a
+    // minus sign, must stay a bare number so the CSV parses as data.
+    expect(rows[1].endsWith(',-0.2,0.5')).toBe(true)
+  })
   it('handles an empty map with just a header', () => {
     expect(toCSV({ points: [], clusters: [] })).toBe('line,cluster,label,x,y')
   })
