@@ -42,6 +42,23 @@ describe('buildMap', () => {
     expect(buildMap([], [])).toEqual({ k: 0, points: [], clusters: [] })
   })
 
+  it('survives identical embeddings (user pastes the same line repeatedly)', () => {
+    // Duplicate lines embed to identical vectors — PCA/projection must not
+    // produce NaN, and every point still gets a valid cluster.
+    const dupVecs = Array.from({ length: 8 }, () => [0.5, 0.5, 0.5, 0.5])
+    const dupTexts = Array.from({ length: 8 }, () => 'buy milk')
+    const map = buildMap(dupVecs, dupTexts, { k: 3 })
+    expect(map.points).toHaveLength(8)
+    for (const p of map.points) {
+      expect(Number.isFinite(p.x)).toBe(true)
+      expect(Number.isFinite(p.y)).toBe(true)
+      expect(p.cluster).toBeGreaterThanOrEqual(0)
+      expect(p.cluster).toBeLessThan(3)
+    }
+    // A shared corpus still yields a readable (non-empty) label.
+    expect(map.clusters.some((c) => c.label.length > 0)).toBe(true)
+  })
+
   it('estimates k automatically when none is supplied', () => {
     // No opts.k → buildMap falls through to estimateK; three separable groups
     // should yield a small, sane cluster count.
@@ -77,6 +94,13 @@ describe('reprojectMap', () => {
   it('is a no-op for an empty map', () => {
     const empty = buildMap([], [])
     expect(reprojectMap(empty, 1)).toEqual(empty)
+  })
+
+  it('does not mutate the source map', () => {
+    const map = buildMap(vectors, texts, { k: 3 })
+    const before = map.points.map((p) => ({ x: p.x, y: p.y }))
+    reprojectMap(map, 0.8)
+    expect(map.points.map((p) => ({ x: p.x, y: p.y }))).toEqual(before)
   })
 })
 
