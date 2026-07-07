@@ -19,5 +19,14 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['test/**/*.test.js'],
+    coverage: {
+      provider: 'v8',
+      // Report on the pure, testable core. embed.js fetches model weights and
+      // samples.js is static data; main.js / mapview.js are the DOM + canvas
+      // layers, exercised via the build and manual QA rather than unit tests.
+      include: ['src/lib/**'],
+      exclude: ['src/lib/embed.js', 'src/lib/samples.js'],
+      reporter: ['text', 'html'],
+    },
   },
 })
