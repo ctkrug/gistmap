@@ -5,6 +5,8 @@
 import { kmeans, estimateK } from './cluster.js'
 import { projectPCA } from './project.js'
 import { labelClusters } from './labels.js'
+import { rotateCoords } from './geometry.js'
+import { normalizeCoords } from './project.js'
 
 /**
  * @param {number[][]} vectors  embeddings (already normalized)
@@ -42,4 +44,18 @@ export function buildMap(vectors, texts, opts = {}) {
 
 export function clampK(k, n) {
   return Math.max(1, Math.min(Math.round(k), n))
+}
+
+/**
+ * Return a copy of `map` with its 2D layout rotated by `angle` radians and
+ * re-normalized into the [-1,1] box. Cluster membership, labels, and sizes are
+ * untouched — reproject changes only where points sit, never what they mean.
+ * @param {ReturnType<typeof buildMap>} map
+ * @param {number} angle
+ */
+export function reprojectMap(map, angle) {
+  if (!map.points.length) return map
+  const rotated = normalizeCoords(rotateCoords(map.points.map((p) => ({ x: p.x, y: p.y })), angle))
+  const points = map.points.map((p, i) => ({ ...p, x: rotated[i].x, y: rotated[i].y }))
+  return { ...map, points }
 }
