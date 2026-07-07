@@ -70,4 +70,10 @@ describe('labelClusters', () => {
     const labels = labelClusters(['mango mango', 'mango sweet'], [0, 0], 1)
     expect(labels[0]).toMatch(/mango/)
   })
+
+  it('handles an empty corpus without dividing by zero', () => {
+    // texts.length is 0 here, exercising the `totalDocs = texts.length || 1`
+    // fallback; every cluster is empty so all labels fall back to "misc".
+    expect(labelClusters([], [], 3)).toEqual(['misc', 'misc', 'misc'])
+  })
 })
