@@ -38,7 +38,10 @@ re-run `buildMap` / `reprojectMap` without re-embedding.
 - **geometry.js** — `scaleToViewport`, `pickNearest` (hover hit-test),
   `scatterPositions` (snap start), `rotateCoords`.
 - **anim.js** — `easeOutCubic`, `lerp`, `clamp01`, `staggeredProgress` (snap wave).
-- **exporters.js** — `toRows`, `toJSON`, `toCSV` (RFC-4180-ish escaping).
+- **exporters.js** — `toRows`, `toJSON`, `toCSV` (RFC-4180-ish escaping +
+  spreadsheet formula-injection guard on text cells).
+- **input.js** — `parseLines` (trim/drop-blanks + `MAX_LINES` cap) so a huge
+  paste can't freeze the tab.
 - **sfx.js** — `createSfx` (WebAudio synth chime/tick/sweep, persisted mute,
   guarded AudioContext). Dependency-injected for testing.
 - **samples.js** — three built-in messy datasets.
@@ -71,6 +74,8 @@ Vite entry into `dist/site/`.
 
 - **Dev:** `npm run dev` (Vite dev server).
 - **Test:** `npm test` (Vitest, node env — pure logic only, no browser needed).
+- **Coverage:** `npm run test:coverage` (v8; reports on `src/lib/` core, ~99%
+  lines — includes fast-check property tests for the math and IO invariants).
 - **Lint:** `npm run lint` (ESLint).
 - **Build:** `npm run build` → `dist/` (static, base-path-relative for subpaths).
   Two HTML entries: `dist/index.html` (app) and `dist/site/index.html` (landing).
