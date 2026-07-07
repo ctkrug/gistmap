@@ -189,6 +189,14 @@ textarea:focus-visible {
   border-color: var(--accent-2);
 }
 
+/* .btn.ghost's `box-shadow: none` matches .btn:focus-visible's specificity,
+   so source order alone left ghost buttons (Clear, Reproject, JSON, CSV)
+   with no visible focus ring; restate it here to win on specificity. */
+.btn.ghost:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(94, 198, 216, 0.4);
+}
+
 .row {
   display: flex;
   gap: 8px;
