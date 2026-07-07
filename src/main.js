@@ -66,7 +66,8 @@ one item per line"></textarea>
     </aside>
 
     <section class="stage">
-      <canvas id="map"></canvas>
+      <canvas id="map" role="img"
+        aria-label="Semantic map — points clustered into labeled constellations"></canvas>
       <div class="coord" id="coord" aria-hidden="true"></div>
       <div class="legend" id="legend" hidden></div>
       <div class="tooltip" id="tooltip" role="status" hidden></div>
@@ -131,6 +132,14 @@ function updateCount() {
 input.addEventListener('input', () => {
   clearHint()
   updateCount()
+})
+// Cmd/Ctrl+Enter maps without reaching for the mouse.
+input.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    e.preventDefault()
+    sfx.resume()
+    mapIt()
+  }
 })
 
 el('clear-btn').addEventListener('click', () => {
