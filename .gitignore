@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+dist-ssr/
+*.local
+
+# Vite / test caches
+.vite/
+coverage/
+*.tsbuildinfo
+
+# Transformers.js model cache (never commit weights)
+.cache/
+models/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+*.log
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.swp
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
