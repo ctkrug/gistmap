@@ -51,4 +51,11 @@ describe('staggeredProgress', () => {
     expect(Number.isFinite(p)).toBe(true)
     expect(p).toBeGreaterThan(0)
   })
+  it('stays finite when the settle window collapses (stagger = 1)', () => {
+    // stagger=1 makes window=0; the `window || duration` guard must kick in.
+    const p = staggeredProgress(100, 400, 5, 10, 1)
+    expect(Number.isFinite(p)).toBe(true)
+    expect(p).toBeGreaterThanOrEqual(0)
+    expect(p).toBeLessThanOrEqual(1)
+  })
 })
