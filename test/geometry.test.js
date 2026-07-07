@@ -43,6 +43,11 @@ describe('pickNearest', () => {
   it('returns -1 for an empty set', () => {
     expect(pickNearest(0, 0, [], 14)).toBe(-1)
   })
+  it('includes a point sitting exactly on the radius boundary', () => {
+    // d² == radius² must count as a hit (inclusive), so a cursor grazing the
+    // edge of a star still selects it.
+    expect(pickNearest(0, 0, [{ x: 14, y: 0 }], 14)).toBe(0)
+  })
 })
 
 describe('scatterPositions', () => {
