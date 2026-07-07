@@ -85,7 +85,7 @@ export function createMapView(canvas, opts = {}) {
     displayed = starts.map((p) => ({ ...p }))
   }
 
-  function start(mode) {
+  function start() {
     animStart = performance.now()
     linesAlpha = 0
     cancelAnimationFrame(raf)
@@ -205,7 +205,7 @@ export function createMapView(canvas, opts = {}) {
       return
     }
     computeGeometry(mode)
-    start(mode)
+    start()
   }
 
   function setHighlight(clusterId) {
