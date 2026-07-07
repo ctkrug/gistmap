@@ -240,7 +240,7 @@ textarea:focus-visible {
 .btn.sm {
   font-size: 13px;
   padding: 9px 14px;
-  min-height: 40px;
+  min-height: 44px;
   font-weight: 500;
 }
 
@@ -329,8 +329,8 @@ input[type='range']:focus-visible {
 
 .icon-btn {
   flex: none;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 999px;
   border: 1px solid var(--line);
   background: var(--surface-2);
