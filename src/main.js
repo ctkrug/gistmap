@@ -182,6 +182,7 @@ async function mapIt() {
   mapBtn.disabled = true
   showLoading('Loading the on-device model…')
   setStatus('loading model…')
+  announcedPctByFile.clear()
 
   try {
     const { embedTexts } = await import('./lib/embed.js')
@@ -210,6 +211,15 @@ mapBtn.addEventListener('click', () => {
   mapIt()
 })
 
+// The visual progress bar lives inside the (non-live) stage overlay, so
+// screen readers heard nothing between "loading model…" and "clustering…"
+// even though the download can take many seconds. Mirror it into the
+// aria-live status line too, throttled to a few milestones per file so it
+// doesn't spam an announcement on every percentage tick. Progress is
+// reported per source file (tokenizer, config, weights, ...); tracking a
+// single global threshold would let a small file's instant 100% suppress
+// the one file (the actual model weights) whose progress is worth hearing.
+let announcedPctByFile = new Map()
 function onModelProgress(p) {
   if (p?.status === 'progress' && p.progress != null) {
     const pct = Math.round(p.progress)
@@ -217,6 +227,11 @@ function onModelProgress(p) {
     if (bar) bar.style.width = `${pct}%`
     const label = document.getElementById('prog-label')
     if (label) label.textContent = `Downloading model… ${pct}%`
+    const lastForFile = announcedPctByFile.get(p.file) ?? -1
+    if (pct >= lastForFile + 20 || pct >= 100) {
+      announcedPctByFile.set(p.file, pct)
+      setStatus(`downloading model… ${pct}%`)
+    }
   }
 }
 
