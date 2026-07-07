@@ -23,7 +23,14 @@ export async function getExtractor(onProgress) {
       return pipeline('feature-extraction', MODEL_ID, {
         progress_callback: onProgress,
       })
-    })()
+    })().catch((err) => {
+      // A rejected promise is still truthy, so without this the singleton
+      // above would replay the same failure forever — e.g. a transient
+      // network blip permanently breaks the page even after Retry, since
+      // getExtractor() would keep returning this same dead promise.
+      extractorPromise = null
+      throw err
+    })
   }
   return extractorPromise
 }
