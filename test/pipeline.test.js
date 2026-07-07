@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildMap, clampK } from '../src/lib/pipeline.js'
+import { buildMap, clampK, reprojectMap } from '../src/lib/pipeline.js'
 
 // Fake "embeddings": three separable groups so we don't need the WASM model.
 const vectors = [
@@ -40,6 +40,32 @@ describe('buildMap', () => {
 
   it('handles empty input gracefully', () => {
     expect(buildMap([], [])).toEqual({ k: 0, points: [], clusters: [] })
+  })
+})
+
+describe('reprojectMap', () => {
+  it('keeps cluster membership and labels, changes positions', () => {
+    const map = buildMap(vectors, texts, { k: 3 })
+    const re = reprojectMap(map, Math.PI / 3)
+    expect(re.points.map((p) => p.cluster)).toEqual(map.points.map((p) => p.cluster))
+    expect(re.clusters).toEqual(map.clusters)
+    const moved = re.points.some((p, i) => Math.abs(p.x - map.points[i].x) > 1e-6)
+    expect(moved).toBe(true)
+  })
+
+  it('stays within the normalized [-1,1] box', () => {
+    const re = reprojectMap(buildMap(vectors, texts, { k: 3 }), 1.1)
+    for (const p of re.points) {
+      expect(p.x).toBeGreaterThanOrEqual(-1.0001)
+      expect(p.x).toBeLessThanOrEqual(1.0001)
+      expect(p.y).toBeGreaterThanOrEqual(-1.0001)
+      expect(p.y).toBeLessThanOrEqual(1.0001)
+    }
+  })
+
+  it('is a no-op for an empty map', () => {
+    const empty = buildMap([], [])
+    expect(reprojectMap(empty, 1)).toEqual(empty)
   })
 })
 
