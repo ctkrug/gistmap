@@ -57,6 +57,21 @@ describe('buildMap', () => {
     }
     // A shared corpus still yields a readable (non-empty) label.
     expect(map.clusters.some((c) => c.label.length > 0)).toBe(true)
+    // k-means couldn't populate all 3 requested clusters from one repeated
+    // vector; buildMap must not surface the empty ones as phantom
+    // zero-member constellations in the legend/exports.
+    for (const c of map.clusters) expect(c.size).toBeGreaterThan(0)
+  })
+
+  it('drops empty clusters instead of surfacing a phantom "misc, 0" entry', () => {
+    const dupVecs = Array.from({ length: 5 }, () => [1, 1])
+    const dupTexts = Array.from({ length: 5 }, () => 'same line')
+    const map = buildMap(dupVecs, dupTexts, { k: 4 })
+    expect(map.clusters.length).toBeLessThan(4)
+    expect(map.clusters.every((c) => c.size > 0)).toBe(true)
+    // Every point must still reference a valid (populated) cluster id.
+    const liveIds = new Set(map.clusters.map((c) => c.id))
+    for (const p of map.points) expect(liveIds.has(p.cluster)).toBe(true)
   })
 
   it('estimates k automatically when none is supplied', () => {

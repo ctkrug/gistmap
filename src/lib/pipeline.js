@@ -37,7 +37,12 @@ export function buildMap(vectors, texts, opts = {}) {
     cluster: assignments[i],
   }))
 
-  const clusters = labels.map((label, id) => ({ id, label, size: sizes[id] }))
+  // Degenerate input (e.g. every line embeds to the same vector) can leave
+  // k-means unable to populate every requested cluster; drop the empty ones
+  // rather than surface a phantom "misc, 0" constellation in the legend and
+  // exports. `points[].cluster` keeps its original id either way, so this
+  // never breaks centroid/color lookups by id.
+  const clusters = labels.map((label, id) => ({ id, label, size: sizes[id] })).filter((c) => c.size > 0)
 
   return { k, points, clusters }
 }
