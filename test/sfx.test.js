@@ -99,4 +99,52 @@ describe('createSfx playback', () => {
     sfx.play('tick') // enough time elapsed → plays
     expect(started.count).toBe(2)
   })
+  it('plays the reproject sweep and the complete arpeggio', () => {
+    const { FakeCtx, started } = fakeAudioCtxClass()
+    const sfx = createSfx({ storage: fakeStorage(), AudioCtx: FakeCtx })
+    sfx.play('reproject')
+    expect(started.count).toBe(1) // single swept tone
+    sfx.play('complete')
+    expect(started.count).toBe(5) // + four arpeggio notes
+  })
+  it('does not throw when the AudioContext constructor throws', () => {
+    class Broken {
+      constructor() {
+        throw new Error('no audio')
+      }
+    }
+    const sfx = createSfx({ storage: fakeStorage(), AudioCtx: Broken })
+    expect(() => sfx.play('complete')).not.toThrow()
+    expect(() => sfx.resume()).not.toThrow()
+  })
+})
+
+describe('createSfx resume', () => {
+  it('resumes a suspended context after a user gesture', () => {
+    let resumed = 0
+    class SuspendedCtx {
+      constructor() {
+        this.state = 'suspended'
+        this.currentTime = 0
+        this.destination = {}
+      }
+      resume() {
+        resumed++
+        this.state = 'running'
+      }
+      createOscillator() {
+        return { frequency: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, type: '', connect() { return this }, start() {}, stop() {} }
+      }
+      createGain() {
+        return { gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect() { return this } }
+      }
+    }
+    const sfx = createSfx({ storage: fakeStorage(), AudioCtx: SuspendedCtx })
+    sfx.resume()
+    expect(resumed).toBe(1)
+  })
+  it('is a safe no-op with no AudioContext', () => {
+    const sfx = createSfx({ storage: fakeStorage(), AudioCtx: null })
+    expect(() => sfx.resume()).not.toThrow()
+  })
 })
