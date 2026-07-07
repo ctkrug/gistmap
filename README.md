@@ -21,8 +21,9 @@ everyday task of *seeing the shape of a list*. Gistmap does the whole NLP pipeli
 - **Label** each cluster from its most distinctive terms — a readable name, not "Cluster 3".
 - **Project** the high-dimensional vectors down to a 2D map you can hover, re-cluster, and reproject.
 
-All of it in one static page. The model is fetched once and cached; after that Gistmap works
-offline.
+All of it in one static page. The model is fetched once per tab and reused from then on, so
+mapping more lists needs no further network calls — until you close or reload the tab, since
+Gistmap doesn't (yet) ship a service worker to cache the app shell itself.
 
 ## Features
 
@@ -37,7 +38,8 @@ offline.
 - 💾 **Export** — download the clustered result as JSON or CSV.
 - 🔊 **Synth SFX** — a soft WebAudio chime on map completion, with a persisted mute toggle.
 - ⚡ **Sample datasets** — one click to see it work on real messy data.
-- 🔒 **Fully private & offline** — after first load, no network needed.
+- 🔒 **Fully private** — nothing you paste ever leaves the browser, and once the model has
+  loaded, no further network calls are made for the rest of that tab session.
 
 See [`docs/VISION.md`](docs/VISION.md) for the full design and [`docs/BACKLOG.md`](docs/BACKLOG.md)
 for the build plan.
