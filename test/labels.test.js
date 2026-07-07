@@ -9,6 +9,18 @@ describe('tokenize', () => {
   it('drops pure numbers', () => {
     expect(tokenize('order 12345 shipped')).toEqual(['order', 'shipped'])
   })
+
+  it('keeps accented letters intact rather than mangling them', () => {
+    // Regression: a Latin-1 replace turned "café" into "caf" and "résumé"
+    // into "sum". Unicode-aware tokenization preserves the whole word.
+    expect(tokenize('Café résumé naïve')).toEqual(['café', 'résumé', 'naïve'])
+    expect(tokenize('über Zürich')).toEqual(['über', 'zürich'])
+  })
+
+  it('drops non-ASCII numerals as it drops ASCII ones', () => {
+    // Arabic-Indic digits are numbers too — they should not become labels.
+    expect(tokenize('order ٥٥٥ shipped')).toEqual(['order', 'shipped'])
+  })
 })
 
 describe('labelClusters', () => {

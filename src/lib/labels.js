@@ -14,9 +14,11 @@ const STOPWORDS = new Set(
 export function tokenize(text) {
   return String(text)
     .toLowerCase()
-    .replace(/[^a-z0-9\s']/g, ' ')
+    // Keep Unicode letters/numbers (so "café", "résumé", "Zürich" survive
+    // instead of being sliced to their ASCII prefix); drop everything else.
+    .replace(/[^\p{L}\p{N}\s']/gu, ' ')
     .split(/\s+/)
-    .filter((t) => t.length > 2 && !STOPWORDS.has(t) && !/^\d+$/.test(t))
+    .filter((t) => t.length > 2 && !STOPWORDS.has(t) && !/^\p{N}+$/u.test(t))
 }
 
 /**
