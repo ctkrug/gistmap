@@ -19,7 +19,7 @@ everyday task of *seeing the shape of a list*. Gistmap does the whole NLP pipeli
   quantized) via [Transformers.js](https://huggingface.co/docs/transformers.js) on WASM.
 - **Cluster** the embeddings (k-means, with an automatic *k* estimate).
 - **Label** each cluster from its most distinctive terms — a readable name, not "Cluster 3".
-- **Project** the high-dimensional vectors down to a 2D map you can pan, zoom, and read.
+- **Project** the high-dimensional vectors down to a 2D map you can hover, re-cluster, and reproject.
 
 All of it in one static page. The model is fetched once and cached; after that Gistmap works
 offline.
