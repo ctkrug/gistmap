@@ -153,20 +153,24 @@ export function createMapView(canvas, opts = {}) {
   }
 
   function drawPoints(now) {
+    // Cluster of the hovered point — its siblings get a faint highlight so the
+    // constellation the cursor is over reads as a group.
+    const hoverCluster = hoverIndex >= 0 ? map.points[hoverIndex].cluster : -1
     for (let i = 0; i < displayed.length; i++) {
       const cl = map.points[i].cluster
       const color = clusterColor(cl)
       const dim = highlight >= 0 && cl !== highlight
       const isHover = i === hoverIndex
+      const isSibling = !isHover && cl === hoverCluster
       const tw = reduceMotion ? 1 : 0.85 + 0.15 * Math.sin(now / 700 + i)
-      const r = (isHover ? 8 : 4.5) * (dim ? 0.7 : 1)
+      const r = (isHover ? 8 : isSibling ? 5.5 : 4.5) * (dim ? 0.7 : 1)
       const p = displayed[i]
       ctx.globalAlpha = dim ? 0.28 : 1
       ctx.beginPath()
       ctx.arc(p.x, p.y, r, 0, Math.PI * 2)
       ctx.fillStyle = color
       ctx.shadowColor = color
-      ctx.shadowBlur = (isHover ? 18 : 9) * tw
+      ctx.shadowBlur = (isHover ? 18 : isSibling ? 14 : 9) * tw
       ctx.fill()
       ctx.shadowBlur = 0
       if (isHover) {
