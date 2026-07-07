@@ -509,6 +509,14 @@ input[type='range']:focus-visible {
   color: var(--muted);
 }
 
+/* Without this, the explicit `display: grid` above beats the browser's
+   `[hidden] { display: none }` UA rule, leaving this full-stage overlay
+   in the layout — and, since it sits above the canvas, silently eating
+   every pointer event (hover/click) meant for the finished map. */
+.stage-status[hidden] {
+  display: none;
+}
+
 .stage-status {
   max-width: 60ch;
   margin: 0 auto;
