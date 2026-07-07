@@ -53,11 +53,17 @@ Lazily loads the quantized `Xenova/all-MiniLM-L6-v2` sentence-transformer via
 mean-pooled vectors. Not unit-tested (it fetches weights); the math it feeds is.
 
 ### `src/render/mapview.js` — canvas renderer
-`createMapView(canvas, {reduceMotion, onHover})` owns a `requestAnimationFrame`
-loop: scatters points and snaps them into cluster layout (`staggeredProgress`),
-fades in constellation lines to each centroid, twinkles the field, and hit-tests
-the pointer for hover. `setMap(map, {mode:'snap'|'tween'})`, `setHighlight(id)`,
-`resize()`, `destroy()`. `clusterCentroids2D` is exported pure and unit-tested.
+`createMapView(canvas, {reduceMotion, onHover})` owns a single, persistent
+`requestAnimationFrame` loop (started at construction, stopped only by
+`destroy()`) that scatters points and snaps them into cluster layout
+(`staggeredProgress`), fades in constellation lines to each centroid, and
+keeps the background starfield twinkling at rest — not just during a snap —
+so it never freezes on the page's very first paint or after a transition
+settles. It also hit-tests the pointer for hover on every `pointermove`.
+`setMap(map, {mode:'snap'|'tween'})`, `setHighlight(id)`, `resize()`,
+`destroy()`. Under `reduceMotion` the loop never starts; state changes render
+a single static frame instead. `clusterCentroids2D` is exported pure and
+unit-tested.
 
 ### `src/main.js` — DOM/orchestration glue
 Builds the shell, wires paste→embed→map, the k-slider (live re-cluster),
@@ -74,8 +80,9 @@ Vite entry into `dist/site/`.
 
 - **Dev:** `npm run dev` (Vite dev server).
 - **Test:** `npm test` (Vitest, node env — pure logic only, no browser needed).
-- **Coverage:** `npm run test:coverage` (v8; reports on `src/lib/` core, ~99%
-  lines — includes fast-check property tests for the math and IO invariants).
+- **Coverage:** `npm run test:coverage` (v8; reports on `src/lib/` core, 100%
+  lines / ~98% branches — includes fast-check property tests for the math
+  and IO invariants).
 - **Lint:** `npm run lint` (ESLint).
 - **Build:** `npm run build` → `dist/` (static, base-path-relative for subpaths).
   Two HTML entries: `dist/index.html` (app) and `dist/site/index.html` (landing).
@@ -86,3 +93,10 @@ Vite entry into `dist/site/`.
 - Randomness is seeded so maps are reproducible across runs.
 - Pure logic lives in `src/lib/` and ships with tests in the same change; the
   canvas/DOM layers are exercised via the build + manual QA.
+- Any element toggled via the `hidden` attribute (`.legend`, `.tools`,
+  `.stage-status`) must pair its `display` declaration with an explicit
+  `.foo[hidden] { display: none }` override — an author style's `display`
+  otherwise always beats the browser's built-in `[hidden]` UA rule, leaving
+  the element rendered (and, if it's absolutely positioned over the canvas,
+  silently swallowing pointer events too). This bit three elements in QA;
+  grep for `hidden` in `main.js` before adding another one.
