@@ -47,4 +47,14 @@ describe('normalizeCoords', () => {
     expect(out[0].x).toBeCloseTo(-1)
     expect(out[1].x).toBeCloseTo(1)
   })
+
+  it('collapses coincident points to the origin without dividing by zero', () => {
+    // Zero span on both axes → the `|| 1` guard keeps the result finite.
+    const out = normalizeCoords([{ x: 2, y: 2 }, { x: 2, y: 2 }])
+    expect(out).toEqual([{ x: 0, y: 0 }, { x: 0, y: 0 }])
+  })
+
+  it('is empty for an empty input', () => {
+    expect(normalizeCoords([])).toEqual([])
+  })
 })
