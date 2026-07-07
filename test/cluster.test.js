@@ -51,4 +51,24 @@ describe('estimateK', () => {
     expect(estimateK([[1, 1]])).toBe(1)
     expect(estimateK([[1, 1], [2, 2]])).toBe(2)
   })
+
+  it('returns kMin when the scan window is empty (kMax < kMin)', () => {
+    // Force kMax below kMin so the elbow scan cannot run.
+    expect(estimateK(blobs, { kMin: 8, kMax: 3 })).toBe(8)
+  })
+})
+
+describe('kmeans on degenerate input', () => {
+  it('handles many identical points without crashing (coincident seeds)', () => {
+    // All points coincide, so k-means++ seeding hits the "total distance is
+    // zero" path and must still return k valid clusters.
+    const same = Array.from({ length: 6 }, () => [1, 1, 1])
+    const { assignments, k } = kmeans(same, 3)
+    expect(k).toBe(3)
+    expect(assignments).toHaveLength(6)
+    for (const a of assignments) {
+      expect(a).toBeGreaterThanOrEqual(0)
+      expect(a).toBeLessThan(3)
+    }
+  })
 })
