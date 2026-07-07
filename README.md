@@ -24,14 +24,18 @@ everyday task of *seeing the shape of a list*. Gistmap does the whole NLP pipeli
 All of it in one static page. The model is fetched once and cached; after that Gistmap works
 offline.
 
-## Features (planned)
+## Features
 
-- 📋 **Paste-and-go** — drop in newline-separated text, get a map. No config required.
+- 📋 **Paste-and-go** — drop in newline-separated text, press **Map it**. No config required.
 - 🧠 **On-device embeddings** — sentence-transformer model in WASM; data never leaves the browser.
-- 🗺️ **Live semantic map** — clusters as colored islands, hover a point to read the line.
-- 🏷️ **Automatic labels** — each cluster named from its signature terms.
-- 🎛️ **Tune it** — adjust cluster count, reproject, and re-cluster live.
+- 🗺️ **Live constellation map** — points snap into clusters with faint lines to each centroid;
+  hover a point to read its line, with a live coordinate readout.
+- 🏷️ **Automatic labels** — each cluster (constellation) named from its signature terms, shown
+  on the map and in a clickable legend that highlights the cluster.
+- 🎛️ **Tune it** — a constellation-count slider re-clusters live; a reproject control rotates
+  the layout without changing membership.
 - 💾 **Export** — download the clustered result as JSON or CSV.
+- 🔊 **Synth SFX** — a soft WebAudio chime on map completion, with a persisted mute toggle.
 - ⚡ **Sample datasets** — one click to see it work on real messy data.
 - 🔒 **Fully private & offline** — after first load, no network needed.
 
@@ -55,7 +59,9 @@ npm test         # run the unit suite
 npm run build    # produce the static site in dist/
 ```
 
-Then open the printed URL, paste some lines, and press **Map it**.
+Then open the printed URL, paste some lines, and press **Map it**. The build emits two pages:
+the app at `dist/index.html` and a landing page at `dist/site/index.html`, both with relative
+asset paths so they host correctly under a subpath (e.g. `apps.example.com/gistmap/`).
 
 ## Privacy
 
