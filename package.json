@@ -1,0 +1,33 @@
+{
+  "name": "gistmap",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Paste a messy list and watch a 7 MB in-browser model group and label it into a live semantic map — zero data leaves your tab.",
+  "type": "module",
+  "license": "MIT",
+  "author": "ctkrug",
+  "homepage": "https://github.com/ctkrug/gistmap",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ctkrug/gistmap.git"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.9.0",
+    "vite": "^5.4.0",
+    "vitest": "^2.0.5"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
