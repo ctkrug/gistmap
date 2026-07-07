@@ -3,6 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0a0f1f" />
     <meta
       name="description"
       content="Paste a messy list and watch a 7 MB in-browser model group and label it into a live semantic map — zero data leaves your tab."
@@ -22,6 +24,12 @@
   </head>
   <body>
     <div id="app"></div>
+    <noscript>
+      <p style="color: #f0ead9; font-family: system-ui, sans-serif; padding: 24px">
+        Gistmap runs entirely in your browser and needs JavaScript enabled to map your
+        lists on-device. Please enable JavaScript and reload.
+      </p>
+    </noscript>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
