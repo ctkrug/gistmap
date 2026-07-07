@@ -3,6 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0a0f1f" />
     <meta
       name="description"
       content="Gistmap turns a messy pasted list into a labeled semantic map in your browser — a 7 MB on-device model, zero data uploaded."
@@ -84,6 +86,8 @@
       }
       .cta:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(231, 178, 76, 0.38); }
       .cta:active { transform: translateY(1px) scale(0.99); }
+      .cta:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(94, 198, 216, 0.45); }
+      a:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; border-radius: 2px; }
 
       .hero {
         display: grid;
