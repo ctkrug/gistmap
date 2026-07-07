@@ -1,12 +1,19 @@
 import './style.css'
 import { SAMPLES, SAMPLE_NAMES } from './lib/samples.js'
-import { buildMap } from './lib/pipeline.js'
-import { CLUSTER_COLORS } from './lib/palette.js'
-import { drawMap, drawStarfield } from './render/canvas.js'
+import { buildMap, reprojectMap, clampK } from './lib/pipeline.js'
+import { clusterColor } from './lib/palette.js'
+import { createMapView } from './render/mapview.js'
+import { createSfx } from './lib/sfx.js'
+import { toJSON, toCSV } from './lib/exporters.js'
 
-// Minimal-but-real shell: renders the designed layout, shows the starfield
-// empty state, and wires paste → embed → map. The embedding model loads
-// lazily on first "Map it"; the map render is fleshed out in the BUILD phase.
+// App shell: paste → embed → map, then explore (hover, legend, k-slider,
+// reproject, export). The pure math lives under lib/; the map render under
+// render/. This module is the DOM/orchestration glue.
+
+const MIN_LINES = 3
+const reduceMotion =
+  typeof window !== 'undefined' &&
+  window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
 const app = document.getElementById('app')
 
@@ -21,8 +28,10 @@ app.innerHTML = `
 
       <div>
         <label class="field" for="input">Your lines (one per row)</label>
-        <textarea id="input" placeholder="Paste tasks, tweets, feedback, bookmarks…
+        <textarea id="input" aria-describedby="status-line"
+          placeholder="Paste tasks, tweets, feedback, bookmarks…
 one item per line"></textarea>
+        <p class="inline-hint" id="input-hint" hidden></p>
       </div>
 
       <div class="row">
@@ -35,38 +44,80 @@ one item per line"></textarea>
         <div class="samples" id="samples"></div>
       </div>
 
-      <p class="hint" id="status-line">idle · 0 lines</p>
+      <div class="tools" id="tools" hidden>
+        <div class="tool-block">
+          <label class="field" for="k-slider">Constellations
+            <span class="k-val" id="k-val">–</span></label>
+          <input type="range" id="k-slider" min="2" max="12" step="1" value="4"
+            aria-label="Number of clusters" />
+        </div>
+        <div class="row">
+          <button class="btn ghost sm" id="reproject-btn">Reproject</button>
+          <button class="btn ghost sm" id="export-json">JSON</button>
+          <button class="btn ghost sm" id="export-csv">CSV</button>
+        </div>
+      </div>
+
+      <div class="rail-foot">
+        <button class="icon-btn" id="mute-btn" aria-label="Mute sound"
+          aria-pressed="false">🔊</button>
+        <p class="hint" id="status-line" role="status" aria-live="polite">idle · 0 lines</p>
+      </div>
     </aside>
 
     <section class="stage">
       <canvas id="map"></canvas>
+      <div class="coord" id="coord" aria-hidden="true"></div>
+      <div class="legend" id="legend" hidden></div>
+      <div class="tooltip" id="tooltip" role="status" hidden></div>
       <div class="stage-status" id="stage-status">
-        <h2>Your map starts here</h2>
-        <p>Paste some lines and press <strong>Map it</strong> — or pick a sample.</p>
+        <div class="empty-badge">✦</div>
+        <h2>You are here</h2>
+        <p>Paste some lines and press <strong>Map it</strong> — or pick a sample.
+          Everything runs in your tab; nothing is uploaded.</p>
       </div>
     </section>
   </div>
 `
 
-const input = document.getElementById('input')
-const canvas = document.getElementById('map')
-const statusLine = document.getElementById('status-line')
-const stageStatus = document.getElementById('stage-status')
-const mapBtn = document.getElementById('map-btn')
+// --- Element handles ------------------------------------------------------
+const input = el('input')
+const canvas = el('map')
+const statusLine = el('status-line')
+const stageStatus = el('stage-status')
+const mapBtn = el('map-btn')
+const inputHint = el('input-hint')
+const tools = el('tools')
+const kSlider = el('k-slider')
+const kVal = el('k-val')
+const legend = el('legend')
+const tooltip = el('tooltip')
+const coord = el('coord')
+const muteBtn = el('mute-btn')
 
-// Sample pills
-const samplesEl = document.getElementById('samples')
+// --- App state ------------------------------------------------------------
+const sfx = createSfx()
+let current = null // { vectors, texts, map }
+const view = createMapView(canvas, { reduceMotion, onHover })
+
+syncMuteButton()
+
+// --- Sample pills ---------------------------------------------------------
+const samplesEl = el('samples')
 for (const name of SAMPLE_NAMES) {
   const b = document.createElement('button')
   b.className = 'pill'
+  b.type = 'button'
   b.textContent = name
   b.addEventListener('click', () => {
     input.value = SAMPLES[name].join('\n')
+    clearHint()
     updateCount()
   })
   samplesEl.appendChild(b)
 }
 
+// --- Input handling -------------------------------------------------------
 function lines() {
   return input.value
     .split('\n')
@@ -75,63 +126,252 @@ function lines() {
 }
 
 function updateCount() {
-  statusLine.textContent = `idle · ${lines().length} lines`
+  if (!current) setStatus(`idle · ${lines().length} lines`)
 }
-input.addEventListener('input', updateCount)
-
-document.getElementById('clear-btn').addEventListener('click', () => {
-  input.value = ''
+input.addEventListener('input', () => {
+  clearHint()
   updateCount()
-  stageStatus.style.display = 'grid'
-  stageStatus.innerHTML = '<h2>Your map starts here</h2><p>Paste some lines and press <strong>Map it</strong> — or pick a sample.</p>'
-  drawStarfield(canvas)
 })
 
+el('clear-btn').addEventListener('click', () => {
+  input.value = ''
+  current = null
+  clearHint()
+  updateCount()
+  legend.hidden = true
+  tools.hidden = true
+  coord.textContent = ''
+  showEmptyState()
+  view.setMap(null)
+})
+
+// --- The wow moment: map it -----------------------------------------------
 async function mapIt() {
   const texts = lines()
-  if (texts.length < 3) {
-    setStatus('Add at least 3 lines to map.', true)
+  if (texts.length < MIN_LINES) {
+    showHint(`Add at least ${MIN_LINES} lines to map — you have ${texts.length}.`)
     return
   }
+  clearHint()
   mapBtn.disabled = true
-  stageStatus.style.display = 'grid'
-  stageStatus.innerHTML = '<h2>Mapping…</h2><p id="prog">Loading the on-device model…</p>'
+  showLoading('Loading the on-device model…')
   setStatus('loading model…')
 
   try {
     const { embedTexts } = await import('./lib/embed.js')
-    const prog = document.getElementById('prog')
-    const vectors = await embedTexts(texts, {
-      onProgress: (p) => {
-        if (p?.status === 'progress' && p.progress != null) {
-          prog.textContent = `Downloading model… ${Math.round(p.progress)}%`
-        }
-      },
-    })
+    const vectors = await embedTexts(texts, { onProgress: onModelProgress })
     setStatus('clustering…')
     const map = buildMap(vectors, texts)
-    stageStatus.style.display = 'none'
-    drawMap(canvas, map)
-    setStatus(`${texts.length} lines · ${map.k} clusters`)
+    current = { vectors, texts, map }
+    revealMap(map, { mode: 'snap' })
+    initTools(map)
+    sfx.resume()
+    sfx.play('complete')
   } catch (err) {
     console.error(err)
-    setStatus('Something went wrong — see console.', true)
-    stageStatus.innerHTML = '<h2>Couldn’t map that</h2><p>The model failed to load. Check your connection and retry.</p>'
+    showError()
+    setStatus('model failed to load', true)
   } finally {
     mapBtn.disabled = false
   }
 }
+mapBtn.addEventListener('click', () => {
+  sfx.resume()
+  mapIt()
+})
 
+function onModelProgress(p) {
+  if (p?.status === 'progress' && p.progress != null) {
+    const pct = Math.round(p.progress)
+    const bar = document.getElementById('prog-bar')
+    if (bar) bar.style.width = `${pct}%`
+    const label = document.getElementById('prog-label')
+    if (label) label.textContent = `Downloading model… ${pct}%`
+  }
+}
+
+function revealMap(map, opts) {
+  hideStageStatus()
+  view.setMap(map, opts)
+  legend.hidden = false
+  renderLegend(map)
+  setStatus(`${map.points.length} lines · ${map.k} constellations`)
+  coord.textContent = `k=${map.k} · n=${map.points.length}`
+}
+
+// --- Tools: k-slider, reproject, export -----------------------------------
+function initTools(map) {
+  tools.hidden = false
+  kSlider.value = String(clampK(map.k, map.points.length))
+  kSlider.max = String(Math.min(12, map.points.length))
+  kVal.textContent = map.k
+}
+
+kSlider.addEventListener('input', () => {
+  if (!current) return
+  const k = Number(kSlider.value)
+  kVal.textContent = k
+  const map = buildMap(current.vectors, current.texts, { k })
+  current.map = map
+  view.setMap(map, { mode: 'tween' })
+  renderLegend(map)
+  setStatus(`${map.points.length} lines · ${map.k} constellations`)
+  coord.textContent = `k=${map.k} · n=${map.points.length}`
+  sfx.play('tick')
+})
+
+el('reproject-btn').addEventListener('click', () => {
+  if (!current) return
+  // A fixed golden-angle turn gives a fresh-but-stable layout each press.
+  const map = reprojectMap(current.map, 2.399963)
+  current.map = map
+  view.setMap(map, { mode: 'tween' })
+  sfx.play('reproject')
+  setStatus('reprojected')
+})
+
+el('export-json').addEventListener('click', () => {
+  if (current) download('gistmap.json', 'application/json', toJSON(current.map))
+})
+el('export-csv').addEventListener('click', () => {
+  if (current) download('gistmap.csv', 'text/csv', toCSV(current.map))
+})
+
+// --- Legend ---------------------------------------------------------------
+function renderLegend(map) {
+  legend.innerHTML = ''
+  const heading = document.createElement('div')
+  heading.className = 'legend-head'
+  heading.textContent = 'Constellations'
+  legend.appendChild(heading)
+
+  for (const c of map.clusters) {
+    const row = document.createElement('button')
+    row.className = 'legend-row'
+    row.type = 'button'
+    row.dataset.cluster = String(c.id)
+    row.innerHTML = `
+      <span class="swatch" style="--c:${clusterColor(c.id)}"></span>
+      <span class="legend-label">${escapeHtml(c.label)}</span>
+      <span class="legend-count">${c.size}</span>`
+    row.addEventListener('mouseenter', () => view.setHighlight(c.id))
+    row.addEventListener('mouseleave', () => view.setHighlight(-1))
+    row.addEventListener('focus', () => view.setHighlight(c.id))
+    row.addEventListener('blur', () => view.setHighlight(-1))
+    row.addEventListener('click', () => toggleLegendActive(row, c.id))
+    legend.appendChild(row)
+  }
+}
+
+let activeCluster = -1
+function toggleLegendActive(row, id) {
+  const nowActive = activeCluster !== id
+  activeCluster = nowActive ? id : -1
+  for (const r of legend.querySelectorAll('.legend-row')) r.classList.remove('active')
+  if (nowActive) row.classList.add('active')
+  view.setHighlight(activeCluster)
+}
+
+// --- Hover tooltip --------------------------------------------------------
+function onHover(idx, info) {
+  if (idx < 0 || !info) {
+    tooltip.hidden = true
+    if (current) coord.textContent = `k=${current.map.k} · n=${current.map.points.length}`
+    return
+  }
+  const { point, screen } = info
+  tooltip.textContent = point.text
+  tooltip.hidden = false
+  const rect = canvas.getBoundingClientRect()
+  const maxX = rect.width - tooltip.offsetWidth - 12
+  tooltip.style.left = `${Math.max(8, Math.min(screen.x + 14, maxX))}px`
+  tooltip.style.top = `${Math.max(8, screen.y - 8)}px`
+  coord.textContent = `x ${point.x.toFixed(2)}  y ${point.y.toFixed(2)}`
+}
+
+// --- Mute -----------------------------------------------------------------
+muteBtn.addEventListener('click', () => {
+  const muted = sfx.toggle()
+  syncMuteButton(muted)
+})
+function syncMuteButton(muted = sfx.isMuted()) {
+  muteBtn.textContent = muted ? '🔇' : '🔊'
+  muteBtn.setAttribute('aria-pressed', String(muted))
+  muteBtn.setAttribute('aria-label', muted ? 'Unmute sound' : 'Mute sound')
+}
+
+// --- Stage state overlays -------------------------------------------------
+function showEmptyState() {
+  stageStatus.hidden = false
+  stageStatus.className = 'stage-status'
+  stageStatus.innerHTML = `
+    <div class="empty-badge">✦</div>
+    <h2>You are here</h2>
+    <p>Paste some lines and press <strong>Map it</strong> — or pick a sample.
+      Everything runs in your tab; nothing is uploaded.</p>`
+}
+function showLoading(label) {
+  stageStatus.hidden = false
+  stageStatus.className = 'stage-status loading'
+  stageStatus.innerHTML = `
+    <div class="spinner" aria-hidden="true"></div>
+    <h2>Charting the sky…</h2>
+    <p id="prog-label">${escapeHtml(label)}</p>
+    <div class="progress"><div class="progress-bar" id="prog-bar"></div></div>`
+}
+function showError() {
+  stageStatus.hidden = false
+  stageStatus.className = 'stage-status error'
+  stageStatus.innerHTML = `
+    <div class="empty-badge">⚠</div>
+    <h2>Couldn’t chart that</h2>
+    <p>The on-device model failed to load. Check your connection and try again.</p>
+    <button class="btn" id="retry-btn">Retry</button>`
+  document.getElementById('retry-btn')?.addEventListener('click', () => {
+    sfx.resume()
+    mapIt()
+  })
+}
+function hideStageStatus() {
+  stageStatus.hidden = true
+}
+
+// --- Small helpers --------------------------------------------------------
+function showHint(msg) {
+  inputHint.textContent = msg
+  inputHint.hidden = false
+}
+function clearHint() {
+  inputHint.hidden = true
+}
 function setStatus(msg, isError = false) {
   statusLine.textContent = msg
   statusLine.style.color = isError ? 'var(--danger)' : 'var(--muted)'
 }
+function download(filename, type, text) {
+  const blob = new Blob([text], { type })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
+function el(id) {
+  return document.getElementById(id)
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  })[c])
+}
 
-mapBtn.addEventListener('click', mapIt)
-
-// First paint: the empty starfield.
-drawStarfield(canvas)
-window.addEventListener('resize', () => drawStarfield(canvas))
+// --- First paint + resize -------------------------------------------------
 updateCount()
-
-export { CLUSTER_COLORS }
+let resizeTimer = 0
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer)
+  resizeTimer = setTimeout(() => view.resize(), 120)
+})
