@@ -41,6 +41,17 @@ describe('buildMap', () => {
   it('handles empty input gracefully', () => {
     expect(buildMap([], [])).toEqual({ k: 0, points: [], clusters: [] })
   })
+
+  it('estimates k automatically when none is supplied', () => {
+    // No opts.k → buildMap falls through to estimateK; three separable groups
+    // should yield a small, sane cluster count.
+    const map = buildMap(vectors, texts)
+    expect(map.k).toBeGreaterThanOrEqual(1)
+    expect(map.k).toBeLessThanOrEqual(vectors.length)
+    expect(map.points).toHaveLength(vectors.length)
+    const total = map.clusters.reduce((s, c) => s + c.size, 0)
+    expect(total).toBe(vectors.length)
+  })
 })
 
 describe('reprojectMap', () => {
