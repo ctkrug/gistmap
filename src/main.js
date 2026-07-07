@@ -147,6 +147,7 @@ el('clear-btn').addEventListener('click', () => {
   runToken++ // invalidate any Map it run still in flight
   input.value = ''
   current = null
+  activeCluster = -1
   clearHint()
   updateCount()
   legend.hidden = true
@@ -237,6 +238,7 @@ function onModelProgress(p) {
 
 function revealMap(map, opts) {
   hideStageStatus()
+  activeCluster = -1
   view.setMap(map, opts)
   legend.hidden = false
   renderLegend(map)
@@ -258,6 +260,11 @@ kSlider.addEventListener('input', () => {
   kVal.textContent = k
   const map = buildMap(current.vectors, current.texts, { k })
   current.map = map
+  // A re-cluster reassigns cluster ids, so any previous highlight/active
+  // selection no longer refers to anything meaningful — drop it instead
+  // of letting it silently dim the freshly rebuilt map (setMap resets the
+  // canvas side; this clears the legend's own tracked selection to match).
+  activeCluster = -1
   view.setMap(map, { mode: 'tween' })
   renderLegend(map)
   setStatus(`${map.points.length} lines · ${map.k} constellations`)
@@ -271,6 +278,9 @@ el('reproject-btn').addEventListener('click', () => {
   const map = reprojectMap(current.map, 2.399963)
   current.map = map
   view.setMap(map, { mode: 'tween' })
+  // Unlike a re-cluster, reproject keeps cluster ids stable — restore the
+  // selection setMap just cleared instead of dropping it on every press.
+  if (activeCluster >= 0) view.setHighlight(activeCluster)
   sfx.play('reproject')
   setStatus('reprojected')
 })

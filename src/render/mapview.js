@@ -212,6 +212,12 @@ export function createMapView(canvas, opts = {}) {
   function setMap(next, { mode = 'snap' } = {}) {
     map = next
     hoverIndex = -1
+    // A fresh buildMap() run can reassign cluster ids, so a highlight from
+    // the previous map would otherwise silently dim the whole new one
+    // (every point's id fails to match a highlight that no longer exists).
+    // reproject/tween callers whose ids are guaranteed stable re-apply
+    // their highlight right after calling setMap.
+    highlight = -1
     fit()
     if (!map || !map.points.length) {
       draw(performance.now())
