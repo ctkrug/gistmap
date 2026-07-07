@@ -21,6 +21,12 @@ describe('tokenize', () => {
     // Arabic-Indic digits are numbers too — they should not become labels.
     expect(tokenize('order ٥٥٥ shipped')).toEqual(['order', 'shipped'])
   })
+
+  it('returns nothing for emoji-only or punctuation-only text', () => {
+    expect(tokenize('🎉🚀✨')).toEqual([])
+    expect(tokenize('!!! ... ??? —')).toEqual([])
+    expect(tokenize('   ')).toEqual([])
+  })
 })
 
 describe('labelClusters', () => {
