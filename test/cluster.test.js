@@ -56,6 +56,12 @@ describe('estimateK', () => {
     // Force kMax below kMin so the elbow scan cannot run.
     expect(estimateK(blobs, { kMin: 8, kMax: 3 })).toBe(8)
   })
+
+  it('handles a single-point scan window without dividing by zero', () => {
+    // kMin === kMax collapses the elbow chord to one point (dx = dy = 0),
+    // exercising the `Math.hypot(dx, dy) || 1` fallback denominator.
+    expect(estimateK(blobs, { kMin: 4, kMax: 4 })).toBe(4)
+  })
 })
 
 describe('kmeans on degenerate input', () => {
