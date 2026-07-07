@@ -144,6 +144,7 @@ input.addEventListener('keydown', (e) => {
 })
 
 el('clear-btn').addEventListener('click', () => {
+  runToken++ // invalidate any Map it run still in flight
   input.value = ''
   current = null
   clearHint()
@@ -157,6 +158,10 @@ el('clear-btn').addEventListener('click', () => {
 
 // --- The wow moment: map it -----------------------------------------------
 let busy = false
+// Bumped by Clear so a Map it run already in flight can tell, once its
+// embed/cluster work resolves, that it's been superseded and must not
+// resurrect a map the user explicitly cleared out from under it.
+let runToken = 0
 async function mapIt() {
   // Guard against overlapping runs: the button disables itself, but Ctrl+Enter
   // and the retry button call this directly, so a key-masher could otherwise
@@ -173,6 +178,7 @@ async function mapIt() {
     clearHint()
   }
   busy = true
+  const myRun = ++runToken
   mapBtn.disabled = true
   showLoading('Loading the on-device model…')
   setStatus('loading model…')
@@ -180,14 +186,17 @@ async function mapIt() {
   try {
     const { embedTexts } = await import('./lib/embed.js')
     const vectors = await embedTexts(texts, { onProgress: onModelProgress })
+    if (myRun !== runToken) return
     setStatus('clustering…')
     const map = buildMap(vectors, texts)
+    if (myRun !== runToken) return
     current = { vectors, texts, map }
     revealMap(map, { mode: 'snap' })
     initTools(map)
     sfx.resume()
     sfx.play('complete')
   } catch (err) {
+    if (myRun !== runToken) return
     console.error(err)
     showError()
     setStatus('model failed to load', true)
