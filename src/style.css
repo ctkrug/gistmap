@@ -217,6 +217,262 @@ textarea:focus-visible {
   font-family: var(--font-mono);
 }
 
+.btn.sm {
+  font-size: 13px;
+  padding: 9px 14px;
+  min-height: 40px;
+  font-weight: 500;
+}
+
+.inline-hint {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--danger);
+}
+
+/* --- Tools panel (post-map controls) ----------------------------------- */
+
+.tools {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(26, 38, 70, 0.35);
+}
+
+.tool-block .field {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.k-val {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  font-size: 14px;
+}
+
+/* Themed range slider (no naked native widget). */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  outline: none;
+  cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--text);
+  border: 2px solid var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  transition: transform 140ms var(--ease);
+}
+input[type='range']::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--text);
+  border: 2px solid var(--accent);
+}
+input[type='range']:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+input[type='range']:focus-visible {
+  box-shadow: 0 0 0 3px rgba(94, 198, 216, 0.25);
+}
+
+/* --- Rail footer: mute + status ---------------------------------------- */
+
+.rail-foot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon-btn {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 16px;
+  cursor: pointer;
+  transition: border-color 160ms var(--ease), transform 120ms var(--ease);
+}
+.icon-btn:hover {
+  border-color: var(--accent);
+}
+.icon-btn:active {
+  transform: scale(0.92);
+}
+.icon-btn:focus-visible {
+  outline: none;
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 3px rgba(94, 198, 216, 0.22);
+}
+.icon-btn[aria-pressed='true'] {
+  color: var(--muted);
+}
+
+/* --- Legend ------------------------------------------------------------- */
+
+.legend {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  max-width: 240px;
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+  background: rgba(17, 26, 48, 0.82);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.legend-head {
+  font-family: var(--font-display);
+  font-size: 13px;
+  color: var(--muted);
+  padding: 4px 8px 8px;
+  letter-spacing: 0.02em;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  transition: background 140ms var(--ease);
+}
+.legend-row:hover,
+.legend-row:focus-visible {
+  background: var(--surface-2);
+  outline: none;
+}
+.legend-row.active {
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.swatch {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 0 8px var(--c);
+}
+.legend-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.legend-count {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* --- Tooltip + coordinate readout -------------------------------------- */
+
+.tooltip {
+  position: absolute;
+  z-index: 5;
+  max-width: 280px;
+  padding: 8px 12px;
+  background: rgba(10, 15, 31, 0.92);
+  border: 1px solid var(--accent-2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.4;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.coord {
+  position: absolute;
+  left: 16px;
+  bottom: 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+/* --- Loading / progress ------------------------------------------------- */
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid var(--line);
+  border-top-color: var(--accent);
+  margin: 0 auto;
+  animation: spin 900ms linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.progress {
+  width: min(260px, 60vw);
+  height: 6px;
+  margin: 4px auto 0;
+  background: var(--surface-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress-bar {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 200ms var(--ease);
+}
+
+.empty-badge {
+  font-size: 34px;
+  color: var(--accent);
+  filter: drop-shadow(0 0 12px rgba(231, 178, 76, 0.5));
+}
+.stage-status.error .empty-badge {
+  color: var(--danger);
+  filter: drop-shadow(0 0 12px rgba(232, 116, 107, 0.5));
+}
+.stage-status .btn {
+  justify-self: center;
+  margin-top: 4px;
+}
+
 /* --- Empty / status state on the stage --------------------------------- */
 
 .stage-status {
@@ -230,11 +486,22 @@ textarea:focus-visible {
   color: var(--muted);
 }
 
+.stage-status {
+  max-width: 60ch;
+  margin: 0 auto;
+}
+
 .stage-status h2 {
   font-family: var(--font-display);
   color: var(--text);
   font-weight: 500;
   margin: 0;
+  font-size: 25px;
+}
+.stage-status p {
+  margin: 0;
+  max-width: 46ch;
+  line-height: 1.5;
 }
 
 /* --- Responsive -------------------------------------------------------- */
@@ -242,21 +509,51 @@ textarea:focus-visible {
 @media (max-width: 780px) {
   .shell {
     grid-template-columns: 1fr;
-    grid-template-rows: 60vh auto;
+    grid-template-rows: 58vh auto;
     height: auto;
     min-height: 100vh;
+    padding: 12px;
+    gap: 12px;
   }
   .rail {
     order: 2;
   }
   .stage {
     order: 1;
-    min-height: 60vh;
+    min-height: 58vh;
+  }
+  /* Legend docks to the bottom of the map so it never covers the field. */
+  .legend {
+    top: auto;
+    bottom: 12px;
+    right: 12px;
+    left: 12px;
+    max-width: none;
+    max-height: 40%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .legend-head {
+    width: 100%;
+    padding-bottom: 4px;
+  }
+  .legend-row {
+    flex: 0 1 auto;
+  }
+  .coord {
+    top: 12px;
+    bottom: auto;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wordmark .star {
+  .wordmark .star,
+  .spinner {
     animation: none;
+  }
+  .progress-bar,
+  input[type='range']::-webkit-slider-thumb {
+    transition: none;
   }
 }
