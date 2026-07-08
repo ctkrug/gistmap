@@ -157,6 +157,43 @@
       .feature p { color: var(--muted); font-size: 14px; line-height: 1.55; margin: 0; }
       .feature .k { color: var(--accent-2); }
 
+      .info {
+        margin-top: 80px;
+        max-width: 68ch;
+      }
+      .info h2 {
+        font-family: var(--font-display);
+        font-weight: 600;
+        font-size: 25px;
+        margin: 40px 0 12px;
+        letter-spacing: -0.01em;
+      }
+      .info h2:first-child { margin-top: 0; }
+      .info p, .info li, .info dd {
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.7;
+      }
+      .info code {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        color: var(--accent-2);
+        background: rgba(26, 38, 70, 0.5);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 1px 6px;
+      }
+      .info ol { padding-left: 20px; }
+      .info li { margin-bottom: 8px; }
+      .faq dt {
+        font-family: var(--font-display);
+        font-weight: 500;
+        color: var(--text);
+        font-size: 18px;
+        margin-top: 20px;
+      }
+      .faq dd { margin: 6px 0 0; }
+
       footer {
         margin-top: 64px;
         padding-top: 24px;
@@ -265,6 +302,62 @@
           <p>Slide the constellation count to re-cluster live, reproject the layout, and
             export the result as <span class="k">JSON or CSV</span>.</p>
         </div>
+      </section>
+
+      <section class="info">
+        <h2>Make sense of a messy list without uploading it</h2>
+        <p>
+          Gistmap is a free tool for anyone sitting on a pile of short text they need to
+          understand fast: a product manager reading a column of survey free-responses, a
+          researcher triaging interview notes, a founder skimming feature requests, or anyone
+          who dumped a hundred to-dos into a note and wants to see the themes. You paste the
+          lines, press <strong>Map it</strong>, and Gistmap groups the ones that mean similar
+          things and gives each group a plain-language name. The point is to see the shape of a
+          list in seconds instead of reading every row twice.
+        </p>
+        <p>
+          It works because a real sentence-embedding model runs inside the page. Each line is
+          turned into a vector by <code>all-MiniLM-L6-v2</code> (about 7 MB, quantized) through
+          Transformers.js on WebAssembly. Gistmap then clusters those vectors with k-means,
+          picks a sensible number of clusters for you, labels each one from the terms that make
+          it distinctive, and projects everything onto a 2D star map you can hover, re-cluster,
+          and reproject. Because the model runs on your own machine, the text you paste is never
+          sent to a server. The only network request is the one-time model download, and you can
+          confirm that in your browser's network tab.
+        </p>
+
+        <h2>How to use it</h2>
+        <ol>
+          <li>Open the app and paste your text, one item per line, or load a sample.</li>
+          <li>Press <strong>Map it</strong>. The model loads once, then embeds and clusters your lines.</li>
+          <li>Hover a star to read its line; click a constellation in the legend to isolate it.</li>
+          <li>Drag the constellation-count slider to split or merge groups, and reproject for a fresh layout.</li>
+          <li>Export the labeled result as JSON or CSV when you want to keep it.</li>
+        </ol>
+
+        <h2>Frequently asked questions</h2>
+        <dl class="faq">
+          <dt>Does my text get uploaded anywhere?</dt>
+          <dd>No. Embedding, clustering, labeling, and rendering all happen in your browser. The
+            only thing downloaded is the model file, once per tab.</dd>
+
+          <dt>How many lines can I map?</dt>
+          <dd>Gistmap maps up to 500 lines per run and tells you if it dropped any past that. A
+            few hundred short lines cluster in roughly two seconds after the model has loaded.</dd>
+
+          <dt>Do I need an account, an API key, or a paid plan?</dt>
+          <dd>None of them. Gistmap is a single static page. Open it and paste; there is nothing
+            to sign up for and no key to configure.</dd>
+
+          <dt>How are the cluster names chosen?</dt>
+          <dd>Each cluster is named from the terms that appear often inside it but rarely across
+            the rest of your list, so you get a label like "billing, refund, invoice" rather than
+            a number.</dd>
+
+          <dt>What kind of text works best?</dt>
+          <dd>Short, self-contained lines: tasks, tweets, survey answers, bookmarks, feedback, or
+            notes. The more each line stands on its own, the cleaner the map.</dd>
+        </dl>
       </section>
 
       <footer>
