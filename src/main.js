@@ -24,7 +24,7 @@ app.innerHTML = `
       <header>
         <h1 class="wordmark">Gistmap<span class="star">✦</span></h1>
         <p class="tagline">Paste a messy list. It clusters into a labeled
-          semantic map — right here in your tab, nothing uploaded.</p>
+          semantic map, right here in your tab. Nothing uploaded.</p>
       </header>
 
       <div>
@@ -74,14 +74,14 @@ one item per line"></textarea>
 
     <section class="stage">
       <canvas id="map" role="img"
-        aria-label="Semantic map — points clustered into labeled constellations"></canvas>
+        aria-label="Semantic map of points clustered into labeled constellations"></canvas>
       <div class="coord" id="coord" aria-hidden="true"></div>
       <div class="legend" id="legend" hidden></div>
       <div class="tooltip" id="tooltip" role="status" hidden></div>
       <div class="stage-status" id="stage-status">
         <div class="empty-badge">✦</div>
         <h2>You are here</h2>
-        <p>Paste some lines and press <strong>Map it</strong> — or pick a sample.
+        <p>Paste some lines and press <strong>Map it</strong>, or pick a sample.
           Everything runs in your tab; nothing is uploaded.</p>
       </div>
     </section>
@@ -176,11 +176,11 @@ async function mapIt() {
   if (busy) return
   const { lines: texts, truncated } = parsed()
   if (texts.length < MIN_LINES) {
-    showHint(`Add at least ${MIN_LINES} lines to map — you have ${texts.length}.`)
+    showHint(`Add at least ${MIN_LINES} lines to map. You have ${texts.length}.`)
     return
   }
   if (truncated > 0) {
-    showHint(`Mapping the first ${MAX_LINES} lines — ${truncated} more were left out to keep it fast.`)
+    showHint(`Mapping the first ${MAX_LINES} lines; ${truncated} more were left out to keep it fast.`)
   } else {
     clearHint()
   }
@@ -368,7 +368,7 @@ function showEmptyState() {
   stageStatus.innerHTML = `
     <div class="empty-badge">✦</div>
     <h2>You are here</h2>
-    <p>Paste some lines and press <strong>Map it</strong> — or pick a sample.
+    <p>Paste some lines and press <strong>Map it</strong>, or pick a sample.
       Everything runs in your tab; nothing is uploaded.</p>`
 }
 function showLoading(label) {
