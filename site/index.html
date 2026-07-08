@@ -7,7 +7,13 @@
     <meta name="theme-color" content="#0a0f1f" />
     <meta
       name="description"
-      content="Gistmap turns a messy pasted list into a labeled semantic map in your browser — a 7 MB on-device model, zero data uploaded."
+      content="Gistmap turns a messy pasted list into a labeled semantic map in your browser. A 7 MB on-device model, zero data uploaded."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Gistmap: a private semantic map for messy lists" />
+    <meta
+      property="og:description"
+      content="Paste a messy list and watch a 7 MB in-browser model group and label it into a live semantic map. Zero data leaves your tab."
     />
     <link
       rel="icon"
@@ -19,7 +25,7 @@
       href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=Space+Mono&display=swap"
       rel="stylesheet"
     />
-    <title>Gistmap — a private semantic map for messy lists</title>
+    <title>Gistmap: a private semantic map for messy lists</title>
     <style>
       :root {
         --bg: #0a0f1f;
@@ -118,7 +124,7 @@
       .hero-actions { display: flex; align-items: center; gap: 16px; }
       .hero-actions .sub { color: var(--muted); font-size: 13px; }
 
-      /* Mini constellation preview — pure CSS/SVG, no upload, no data. */
+      /* Mini constellation preview: pure CSS/SVG, no upload, no data. */
       .preview {
         position: relative;
         aspect-ratio: 1 / 1;
@@ -164,6 +170,7 @@
       }
       footer a { color: var(--accent-2); text-decoration: none; }
       footer a:hover { text-decoration: underline; }
+      .foot-links { display: flex; gap: 18px; flex-wrap: wrap; }
 
       @media (max-width: 820px) {
         .hero { grid-template-columns: 1fr; gap: 28px; }
@@ -187,7 +194,7 @@
         <div>
           <h1>Paste a messy list. Watch it become a <em>map of meaning</em>.</h1>
           <p class="lead">
-            Tasks, tweets, survey answers, bookmarks — drop 150 unsorted lines and a
+            Tasks, tweets, survey answers, bookmarks. Drop 150 unsorted lines and a
             7&nbsp;MB model, running <strong>entirely in your browser</strong>, snaps them into
             labeled, colored constellations in about two seconds.
           </p>
@@ -246,12 +253,12 @@
         <div class="feature">
           <h3>Private by design</h3>
           <p>The embedding model downloads once and runs in WASM. Your pasted text is
-            never sent anywhere — <span class="k">verify it in the network tab</span>.</p>
+            never sent anywhere. <span class="k">Verify it in the network tab</span>.</p>
         </div>
         <div class="feature">
           <h3>It names the clusters</h3>
           <p>Each constellation is auto-labeled by its most distinctive terms, so the map
-            reads like a star atlas — not <span class="k">"Cluster 3"</span>.</p>
+            reads like a star atlas, not <span class="k">"Cluster 3"</span>.</p>
         </div>
         <div class="feature">
           <h3>Tune &amp; export</h3>
@@ -261,8 +268,11 @@
       </section>
 
       <footer>
-        <span>Gistmap — a semantic map for messy lists. Built by ctkrug.</span>
-        <a href="https://github.com/ctkrug/gistmap">Source on GitHub →</a>
+        <span>Gistmap, a semantic map for messy lists. Built by Charlie Krug.</span>
+        <span class="foot-links">
+          <a href="https://github.com/ctkrug/gistmap">Source on GitHub →</a>
+          <a href="https://apps.charliekrug.com">More by Charlie Krug →</a>
+        </span>
       </footer>
     </div>
   </body>
