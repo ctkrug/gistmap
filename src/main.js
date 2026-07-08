@@ -64,6 +64,12 @@ one item per line"></textarea>
           aria-pressed="false">🔊</button>
         <p class="hint" id="status-line" role="status" aria-live="polite">idle · 0 lines</p>
       </div>
+
+      <nav class="rail-links" aria-label="Project links">
+        <a href="https://github.com/ctkrug/gistmap" target="_blank" rel="noopener">GitHub</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://apps.charliekrug.com" target="_blank" rel="noopener">More by Charlie Krug</a>
+      </nav>
     </aside>
 
     <section class="stage">
